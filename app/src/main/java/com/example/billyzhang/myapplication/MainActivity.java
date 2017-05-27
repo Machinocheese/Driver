@@ -1,13 +1,6 @@
 package com.example.billyzhang.myapplication;
 
-import android.animation.Animator;
 import android.animation.ValueAnimator;
-import android.content.DialogInterface;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Point;
-import android.graphics.Rect;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
@@ -16,49 +9,37 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
-import android.util.Log;
-import android.view.Display;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
-import android.view.Window;
-import android.view.animation.Animation;
-import android.view.animation.AnimationSet;
 import android.view.animation.LinearInterpolator;
-import android.view.animation.ScaleAnimation;
-import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity{
 
-    int height;
-    int width;
-    int driverHeight;
-    int driverWidth;
-    int bgHeight;
-    int bgWidth;
-    int bgX = 0, bgY = 0;
-    int numCollisions = 0;
-    int rockHeight;
-    int rockWidth;
-    ImageView driver;
-    int counter = 0;
-    int current_offset = 200;
-    int originalPos[];
-    private GestureDetector gestureDetector;
-    TextView tv;
-    int statusBarOffset;
+    /* my variable declarations. If it seems messy, it's because
+    I programmed as I went along.
+     */
+    int height, width;
+    int driverHeight, driverWidth;
+    int bgHeight, bgWidth;
+    int bgX = 0, numCollisions = 0;
+    int counter = 0, current_offset = 200, statusBarOffset;
+    int rockHeight, rockWidth;
     float currentPosY;
+    int originalPos[];
+
+    private ImageView driver;
+    private GestureDetector gestureDetector;
+    private TextView tv;
     ImageView background;
 
     private Handler handler = new Handler();
+    //this runnable controls the placement of the asteroids and starts moving them
     private Runnable runnable = new Runnable(){
         @Override
         public void run(){
@@ -74,6 +55,7 @@ public class MainActivity extends AppCompatActivity{
             handler.postDelayed(runnable, 1000);
         }
     };
+    //this runnable scrolls the background
     private Runnable controlbg = new Runnable(){
         @Override
         public void run(){
@@ -102,7 +84,8 @@ public class MainActivity extends AppCompatActivity{
 
             @Override public boolean onTouch(View v, MotionEvent event) {
                 if(gestureDetector.onTouchEvent(event)){
-                    current_offset = -1 * current_offset; //single tap
+                    //player goes in opposite direction after a single tap
+                    current_offset = -1 * current_offset;
                 }
                 switch(event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
@@ -145,12 +128,13 @@ public class MainActivity extends AppCompatActivity{
         return position;
     }
 
+    //this method solely controls asteroid movement, as the player only moves up/down
     private void moveHorizontal(final ImageView view, final int positionX, final int positionY){
         final ValueAnimator animator = ValueAnimator.ofFloat(1.0f, -0.2f);
         animator.setInterpolator(new LinearInterpolator());
         animator.setDuration(5000L);
 
-        boolean result;
+        //the image moves as the animation value updates
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -167,6 +151,7 @@ public class MainActivity extends AppCompatActivity{
 
     }
 
+    //checks if the driver and any asteroids are in collision
     private boolean collisionTest(ImageView view){
         int rockPos[] = getPoints(view);
         int driverPos[] = getPoints(driver);
@@ -189,6 +174,8 @@ public class MainActivity extends AppCompatActivity{
         background.setX(bgX);
     }
 
+    /*a makeshift method I used to get around the fact that onCreate doesn't fully load
+    in the right values for certain elements */
     private void initialize(){
         originalPos = getPoints(driver);
         ConstraintLayout xd = (ConstraintLayout)findViewById(R.id.layout);
@@ -219,6 +206,7 @@ public class MainActivity extends AppCompatActivity{
         handler.post(controlbg);
     }
 
+    //essentially a vertical moveHorizontal method
     private void moveView(final int origin, final int offset, boolean returning){
         if(counter == 0){
             initialize();
